@@ -1,3 +1,3 @@
 ## Family Cash Card Backend System
 
-to be written ofc
+to be written of course

@@ -15,23 +15,29 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/cashcards")
 class CashCardController {
-    private CashCardRepository cashCardRepository;
+    private final CashCardRepository cashCardRepository;
 
     private CashCardController(CashCardRepository cashCardRepository) {
         this.cashCardRepository = cashCardRepository;
     }
 
-    @GetMapping("/{id}")
-    private ResponseEntity<CashCard> findById(@PathVariable Long id) {
-        Optional<CashCard> cashCardOptional = cashCardRepository.findById(id);
-        return cashCardOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    @GetMapping("/{requestedId}")
+    private ResponseEntity<CashCard> findById(@PathVariable Long requestedId) {
+        Optional<CashCard> cashCardOptional = cashCardRepository.findById(requestedId);
+        if (cashCardOptional.isPresent()) {
+            return ResponseEntity.ok(cashCardOptional.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping
     private ResponseEntity<Void> createCashCard(@RequestBody CashCard newCashCardRequest, UriComponentsBuilder ucb) {
-        CashCard newCashCard = cashCardRepository.save(newCashCardRequest);
-        URI locationOfNewCashCard = ucb.path("/cashcards/{id}").buildAndExpand(newCashCard.id()).toUri();
-
+        CashCard savedCashCard = cashCardRepository.save(newCashCardRequest);
+        URI locationOfNewCashCard = ucb
+                .path("cashcards/{id}")
+                .buildAndExpand(savedCashCard.id())
+                .toUri();
         return ResponseEntity.created(locationOfNewCashCard).build();
     }
 
